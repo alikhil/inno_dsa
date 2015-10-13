@@ -1,0 +1,210 @@
+import java.io.*;
+import java.util.Random;
+
+/**
+ * @author Alik Khilazhev
+ * @email a.khilazhev@innopolis.ru
+ * @date September 29, 2015
+ * In accordance with the academic honor, I Alik Khilazhev certify that
+ * the answers here are my own work without copying of others and
+ * solutions from Internet or other sources."
+ */
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("input.txt"));
+            BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt"));
+            int n = Integer.parseInt(reader.readLine());
+            Time[] times = new Time[n];
+            for (int i = 0; i < n; i++) {
+                times[i] = new Time(reader.readLine());
+            }
+            MegaLibrary megaLibrary = new MegaLibrary();
+            megaLibrary.quickSort(times, 0, n - 1);
+            for (int i = 0; i < n; i++) {
+                writer.write(times[i].toString());
+            }
+
+            reader.close();
+            writer.close();
+        } catch (FileNotFoundException ex) {
+            System.out.println(
+                    "Unable to open file");
+        } catch (IOException ex) {
+            System.out.println(
+                    "Error reading file");
+        }
+    }
+}
+
+class Time implements Comparable{
+    public Integer hours;
+    public Integer minutes;
+    public Integer seconds;
+
+
+
+    public Time(){
+    }
+
+    public Time(String input){
+        String[] inputes = input.split(" ");
+        hours = Integer.parseInt(inputes[0]);
+        minutes = Integer.parseInt(inputes[1]);
+        seconds = Integer.parseInt(inputes[2]);
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        Time next = (Time)o;
+        if(hours == next.hours){
+            if(minutes == next.minutes){
+                if(seconds == next.seconds){
+                    return 0;
+                }
+                return seconds.compareTo(next.seconds);
+            }
+            return minutes.compareTo(next.minutes);
+        }
+        return hours.compareTo(next.hours);
+    }
+
+    @Override
+    public String toString() {
+        return hours + " " + minutes + " " + seconds + "\n";
+    }
+}
+
+class Team implements Comparable{
+    public String name;
+    public Integer wins;
+    public Integer gameLose;
+    public Integer gameTie;
+    public Integer score;
+    public Integer goalsScored;
+    public Integer goalsAgainst;
+
+    public Team(String name){
+        this.name = name;
+    }
+
+    public Integer gamePlayed(){
+        return gameTie + gameLose + wins;
+    }
+    public Integer goalDifference(){
+        return goalsScored - goalsAgainst;
+    }
+    public void playGame(int goalsScored, int goalsAgainst){
+
+        this.goalsScored += goalsScored;
+        this.goalsAgainst += goalsAgainst;
+
+        if(goalsScored > goalsAgainst) {
+            wins++;
+            score +=3;
+        }
+
+        if(goalsAgainst > goalsScored)
+            gameLose++;
+
+        if(goalsAgainst == goalsScored){
+            score++;
+            gameTie++;
+        }
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        Team anotherTeam = (Team)o;
+        if(score == anotherTeam.score){
+            if(wins == anotherTeam.wins){
+                if(goalDifference() == anotherTeam.goalDifference()){
+                    if(goalsScored == anotherTeam.goalsScored){
+                        if(gamePlayed() == anotherTeam.gamePlayed()){
+                            return name.toLowerCase().compareTo(anotherTeam.name.toLowerCase());
+                        }
+                        return gamePlayed().compareTo(anotherTeam.gamePlayed());
+                    }
+                    return goalsScored.compareTo(anotherTeam.goalsScored);
+                }
+                return goalDifference().compareTo(anotherTeam.goalDifference());
+            }
+            return wins.compareTo(anotherTeam.wins);
+        }
+        return score.compareTo(anotherTeam.score);
+    }
+}
+
+class MegaLibrary {
+    public MegaLibrary() {
+    }
+
+    public void bubleSort(Comparable[] array, int n) {
+        Comparable temp;
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = 0; j < n - i - 1; j++) {
+                if (array[j].compareTo(array[j + 1]) > 0) {
+                    temp = array[j];
+                    array[j] = array[j + 1];
+                    array[j + 1] = temp;
+                }
+            }
+        }
+    }
+
+    public void insertionSort(Comparable[] array, int n){
+        int j;
+        Comparable cur;
+        for (int i = 1; i < n; i++) {
+            j = i;
+            cur = array[i];
+            while (j > 0 && array[j - 1].compareTo(cur) > 0) {
+                array[j] = array[j - 1];
+                j--;
+            }
+            array[j] = cur;
+        }
+    }
+
+    public void selectionSort(Comparable[] array, int n){
+        int min;
+        Comparable temp;
+        for (int i = 0; i < n - 1; i++) {
+            min = i;
+            for (int j = i + 1; j < n ; j++) {
+                if(array[min].compareTo(array[j]) > 0)
+                    min = j;
+            }
+            temp = array[i];
+            array[i] = array[min];
+            array[min] = temp;
+        }
+    }
+
+    public void quickSort(Comparable[] array, int minIndex ,int maxIndex){
+        Random random = new Random();
+        int supportIndex = random.nextInt(maxIndex - minIndex + 1) + minIndex;
+        Comparable supportValue = array[supportIndex];
+        Comparable temp;
+        int l = minIndex, r = maxIndex;
+        while (l <= r){
+            while(array[l].compareTo(supportValue) < 0)
+                l++;
+            while(array[r].compareTo(supportValue) > 0)
+                r--;
+            if(l <= r)
+            {
+                temp = array[l];
+                array[l] = array[r];
+                array[r] = temp;
+                l++;
+                r--;
+            }
+        }
+        if(r > minIndex)
+            quickSort(array, minIndex, r);
+        if(l < maxIndex)
+            quickSort(array, l, maxIndex);
+    }
+}
