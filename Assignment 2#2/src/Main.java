@@ -1,4 +1,7 @@
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -10,18 +13,21 @@ import java.util.Random;
  * solutions from Internet or other sources."
  */
 
+/**
+ * Why quicksort?  Because it ont of the fastest sort method and on big input data it will work fine
+ */
+
 public class Main {
     public static void main(String[] args) throws IOException {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader("input.txt"));
-            BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt"));
+            BufferedReader reader = new BufferedReader(new FileReader("tournament.in"));
+            BufferedWriter writer = new BufferedWriter(new FileWriter("tournament.out"));
             String line = reader.readLine();
-            Team[] teams = new Team[5];
-            int teamCount = 0;
+            ArrayList<Team> teams = new ArrayList<Team>(10);
             while (line != null && line != "") {
                 String[] words = line.split(" ");
                 if (words.length == 1){
-                    teams[teamCount++] = new Team(words[0]);
+                    teams.add(new Team(words[0]));
                 }
                 else if (words.length == 2){
                     int firstTeam = Integer.parseInt(words[0]);
@@ -30,15 +36,18 @@ public class Main {
                     int firstScore = Integer.parseInt(scores[0]);
                     int secondScore = Integer.parseInt(scores[1]);
 
-                    teams[firstTeam].playGame(firstScore, secondScore);
-                    teams[secondTeam].playGame(secondScore, firstScore);
+                    teams.get(firstTeam).playGame(firstScore, secondScore);
+                    teams.get(secondTeam).playGame(secondScore, firstScore);
                 }
                 line = reader.readLine();
             }
-            MegaLibrary.selectionSort(teams,0, teamCount - 1);
-            for(Team team : teams){
-                if(team != null)
-                    writer.write(team.name + "\n");
+            if(teams.size() > 0) {
+                TeamComparator cmp = new TeamComparator();
+                MegaLibrary.quickSort(teams, cmp, 0, teams.size() - 1);
+                for (Team team : teams) {
+                    if (team != null && team.played > 0)
+                        writer.write(team.name + "\n");
+                }
             }
             reader.close();
             writer.close();
@@ -55,43 +64,64 @@ public class Main {
     static class MegaLibrary {
 
         /***
-         * Function for sorting array with quick sort method
+         * Function for sorting list with quick sort method
          *
-         * @param array    array to sort
-         * @param minIndex starting index
-         * @param maxIndex ending index
+         * @param list    list to sort
+         * @param cmp Comparator
+         * @param minIndex start index
+         * @param maxIndex end index
          */
-        public static void selectionSort(Comparable[] array, int minIndex, int maxIndex) {
-            int max = 0;
-            Comparable temp;
-            for (int i = minIndex; i < maxIndex; i++) {
-                max = i;
-                for (int j = i; j <= maxIndex; j++) {
-                    if(array[j].compareTo(array[max]) > 0)
-                        max = j;
+        public static <Type> void quickSort(List<Type> list, Comparator<Type> cmp, int minIndex, int maxIndex){
+            Random random = new Random();
+            int supportIndex = random.nextInt(maxIndex - minIndex + 1) + minIndex;
+            Type supportValue = list.get(supportIndex);
+            Type temp;
+            int l = minIndex, r = maxIndex;
+            while (l <= r){
+                while(cmp.compare(list.get(l), supportValue) < 0)
+                    l++;
+                while(cmp.compare(list.get(r), supportValue) > 0)
+                    r--;
+                if(l <= r)
+                {
+                    temp = list.get(l);
+                    list.set(l, list.get(r));
+                    list.set(r, temp);
+                    l++;
+                    r--;
                 }
-                temp = array[i];
-                array[i] = array[max];
-                array[max] = temp;
             }
+            if(r > minIndex)
+                quickSort(list, cmp, minIndex, r);
+            if(l < maxIndex)
+                quickSort(list, cmp, l, maxIndex);
         }
     }
 }
 
-class Team implements Comparable {
+/**
+ * Team entity
+ */
+class Team{
     public String name;
     public Integer wins;
     public Integer score;
     public Integer goalsScored;
-
+    public Integer played;
 
     public Team(String name) {
         this.name = name;
         wins = 0;
         score = 0;
         goalsScored = 0;
+        played = 0;
     }
 
+    /**
+     * play a match
+     * @param goalsScored scored goals
+     * @param goalsAgainst missed goals
+     */
     public void playGame(int goalsScored, int goalsAgainst) {
 
         this.goalsScored += goalsScored;
@@ -104,22 +134,30 @@ class Team implements Comparable {
         if (goalsAgainst == goalsScored) {
             score++;
         }
+        played++;
     }
 
+}
+
+/**
+ * Teams comparator - compares two teams
+ */
+class TeamComparator implements Comparator<Team>{
+
     @Override
-    public int compareTo(Object o) {
-        Team anotherTeam = (Team) o;
-        if (score == anotherTeam.score) {
-            if (wins == anotherTeam.wins) {
-                if (goalsScored == anotherTeam.goalsScored) {
-                    return anotherTeam.name.toLowerCase().compareTo(name.toLowerCase());
+    public int compare(Team t, Team t1) {
+        if (t1.score == t.score) {
+            if (t1.wins == t.wins) {
+                if (t1.goalsScored == t.goalsScored) {
+                    return t1.name.compareTo(t.name);
                 }
-                return goalsScored.compareTo(anotherTeam.goalsScored);
+                return t1.goalsScored.compareTo(t.goalsScored);
             }
-            return wins.compareTo(anotherTeam.wins);
+            return t1.wins.compareTo(t.wins);
         }
-        return score.compareTo(anotherTeam.score);
+        return t1.score.compareTo(t.score);
     }
 }
+
 
 
