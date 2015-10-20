@@ -5,7 +5,7 @@ import java.util.*;
  */
 public class ProbeHashMap<Key,Val> implements Map<Key,Val> {
 
-    public int size;
+    private int size;
 
     public ProbeHashMap(int capacity){
         CAPACITY = capacity;
