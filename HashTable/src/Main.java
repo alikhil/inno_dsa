@@ -1,4 +1,6 @@
 import java.io.*;
+import java.util.HashMap;
+import java.util.Set;
 
 /**
  * @author Alik Khilazhev
@@ -15,16 +17,16 @@ public class Main {
             BufferedReader reader = new BufferedReader(new FileReader("input.txt"));
             BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt"));
 
-            HashMap<String, String> hashMap = new HashMap<>();
+            Map<String, String> hashMap = new ProbeHashMap<>();
             int n = Integer.parseInt(reader.readLine());
             for(int i = 0;i < n;i++){
                 String[] input = reader.readLine().split(" ");
                 hashMap.put(input[0],input[1]);
             }
 
-            HashMap.Entry[] entries = hashMap.entrySet();
-            for(HashMap.Entry entry : entries){
-                writer.write(entry.key + " " + entry.value + " " + entry.hash + "\n");
+            Set<Map.Entry<String,String>> entries = hashMap.entrySet();
+            for(Map.Entry entry : entries){
+                writer.write(entry.getKey() + " " + entry.getValue() + " " + entry.hashCode() + "\n");
             }
 
             reader.close();
